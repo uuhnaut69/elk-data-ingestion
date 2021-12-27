@@ -19,7 +19,11 @@ services:
     image: elasticsearch:7.16.2
     environment:
       - discovery.type=single-node
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTIC_PASSWORD=testpwd123
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.license.self_generated.type=trial
+      - xpack.security.enabled=true
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -28,8 +32,13 @@ services:
   logstash:
     container_name: logstash
     image: logstash:7.16.2
+    environment:
+      - xpack.security.enabled=true
+      - ELASTICSEARCH_URL=elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=testpwd123
     volumes:
-      - ./logstash/conf/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
       - ./driver/postgresql-42.3.1.jar:/usr/share/logstash/postgresql-42.3.1.jar
     depends_on:
       - elasticsearch
@@ -42,7 +51,10 @@ services:
     container_name: kibana
     image: kibana:7.16.2
     environment:
+      - xpack.security.enabled=true
       - ELASTICSEARCH_URL=elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=testpwd123
     depends_on:
       - elasticsearch
       - logstash
